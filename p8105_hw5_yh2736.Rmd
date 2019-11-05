@@ -1,0 +1,70 @@
+---
+title: "yh2736_hw5"
+author: "Yongmei Huang"
+date: "11/5/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Problem 1
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+set.seed(10)
+
+##loading "iris" dataset and introducing missing data 
+##in each columns
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species))
+```
+
+```{r}
+##funtion "fun_replace_na" to replaces missing value
+fun_replace_na = function(x_vect){
+  if(!is.numeric(x_vect) && !is.character(x_vect)){
+    stop("Argument x_vect should be numeric or character")
+  } else if(is.numeric(x_vect)){
+    mean_value = round(mean(x_vect, na.rm = TRUE), digits = 1)
+    replace(x_vect, is.na(x_vect), mean_value)
+  } else if(is.character(x_vect)){
+    replace(x_vect, is.na(x_vect), "virginica")
+  }
+}
+
+##replace the missing data of dataset "iris_with_missing"
+##with function "fun_replace_na"
+iris_after_replace_na <- iris_with_missing %>% 
+  map_df(~fun_replace_na(.x))
+
+
+##verify the result
+##NA statistic befor run function
+na_before <- iris_with_missing %>% 
+  map_df(~sum(is.na(.x))) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    sepal_length:species,
+    names_to = "variable", 
+    values_to = "na_number_before_replace")
+
+##NA statistic after run function
+na_after <- iris_after_replace_na %>% 
+  map_df(~sum(is.na(.x))) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    sepal_length:species,
+    names_to = "variable", 
+    values_to = "na_number_after_replace")
+
+##combine two dataset with join_left
+table_problem_1 <- left_join(na_before, na_after)
+
+knitr::kable(table_problem_1, 
+             align=c(rep('c',times=4)), 
+             caption = "Table 1 The number of missing data before and after running replace function") 
+
+```
+
