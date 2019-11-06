@@ -68,3 +68,56 @@ knitr::kable(table_problem_1,
 
 ```
 
+# Problem 2
+```{r}
+##set the file path
+file_path <- "./data"
+
+##get file name
+csv_file_names <- list.files(file_path) %>% 
+  .[str_detect(., ".csv")]
+
+##dataframe with all file name
+file_names_dataset <- csv_file_names%>% 
+  as_tibble() %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    type = substr(value, 1, 3),
+    id = substr(value, 5, 6)
+  ) 
+
+##dataset with all observations
+observation_dataset <- csv_file_names %>% 
+  purrr::map(~read_csv(file.path(file_path, .))) %>% 
+  reduce(rbind) %>% 
+  as_tibble() %>% 
+  janitor::clean_names()
+
+##conbine the two dataset, and then tidy the data
+problem2_dataset <- cbind(file_names_dataset, observation_dataset) %>% 
+  rename(
+    file_name = value
+  ) %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "observation_value",
+    names_prefix = "week_"
+  )
+
+
+##draw a spaghetti plot showing observations on each subject over time
+problem2_dataset %>% 
+  ggplot(aes(x = week, y = observation_value, group = id, color = id)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~type) +
+  labs(
+    title = "Figure 1, observations value on each ID from week 1 to week 8 in different group"
+  ) +
+  xlab("Weeks") +
+  ylab("Observations value")
+  
+
+```
+
