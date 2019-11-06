@@ -69,7 +69,7 @@ knitr::kable(table_problem_1,
 ```
 
 # Problem 2
-```{r}
+```{r, message = FALSE}
 ##set the file path
 file_path <- "./data"
 
@@ -118,6 +118,12 @@ problem2_dataset %>%
   xlab("Weeks") +
   ylab("Observations value")
   
+
+```
+
+# Problem 3
+```{r}
+
 
 ```
 
