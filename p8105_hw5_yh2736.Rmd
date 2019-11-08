@@ -220,6 +220,13 @@ left_join(propo_dataset, mean_dataset) %>%
   ggplot(aes(x = beta1)) +
   geom_col(aes(y = propotion, fill = beta1), width = 0.5, show.legend = TRUE) +
   geom_point(aes(y = mean, color = "red"), size = 5, show.legend = FALSE) +
+  scale_y_continuous(
+    name = "Proportion", 
+    sec.axis = sec_axis(~., 
+                        breaks = seq(0, 6, 1),
+                        name =  "The mean value of estimate"
+                        )
+  ) +
   labs(
     title = "Figure 2 the proportion of times the null was rejected and the mean value of estimate with different β1",
     fill = "Propotion"
