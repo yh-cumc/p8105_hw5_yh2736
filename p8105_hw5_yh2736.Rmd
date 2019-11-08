@@ -165,32 +165,119 @@ sim_regression = function(beta0, beta1 = i){
 
 ###simulation results when beta1 = 0
 sim_result_0 = rerun(n, sim_regression(0, 0)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(0, 30)
+  )
 
 ###simulation results when beta1 = 1
 sim_result_1 = rerun(n, sim_regression(0, 1)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(1, 30)
+  )
 ###simulation results when beta1 = 2
 sim_result_2 = rerun(n, sim_regression(0, 2)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(2, 30)
+  )
 
 ###simulation results when beta1 = 3
 sim_result_3 = rerun(n, sim_regression(0, 3)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(3, 30)
+  )
 
 ###simulation results when beta1 = 4
 sim_result_4 = rerun(n, sim_regression(0, 4)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(4, 30)
+  )
 
 ###simulation results when beta1 = 5
 sim_result_5 = rerun(n, sim_regression(0, 5)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(5, 30)
+  )
 
 ###simulation results when beta1 = 6
 sim_result_6 = rerun(n, sim_regression(0, 6)) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(
+    beta1 = rep(6, 30)
+  )
 
 
+### combine all of the results
+sim_results = Reduce(function(...) merge(..., all=TRUE), list(sim_result_0,
+                                                              sim_result_1,
+                                                              sim_result_2,
+                                                              sim_result_3,
+                                                              sim_result_4,
+                                                              sim_result_5,
+                                                              sim_result_6))
+
+
+
+```
+
+```{r}
+###draw a plot showing the proportion of times the null was rejected on the y axis 
+###and the true value of β1 on the x axis
+propo_dataset <- sim_results %>% 
+  group_by(beta1) %>% 
+  summarize(
+    propotion = sum(p_value < 0.05) / n()
+    )
+
+mean_dataset <- sim_results %>% 
+  group_by(beta1) %>% 
+  summarize(
+    propotion = sum(p_value < 0.05) / n(),
+    mean = mean(estimate)
+  ) %>% 
+  filter(
+    propotion < 1.0
+  ) %>% 
+  select(beta1, mean)
+
+left_join(propo_dataset, mean_dataset) %>% 
+  ggplot(aes(x = beta1)) +
+  geom_col(aes(y = propotion, fill = beta1), width = 0.5, show.legend = TRUE) +
+  geom_point(aes(y = mean, color = "red"), size = 5, show.legend = FALSE) +
+  labs(
+    title = "Figure 2 the proportion of times the null was rejected and the mean value of estimate with different β1",
+    fill = "Propotion"
+  ) +
+  xlab("β1") +
+  ylab("") +
+  theme(
+    plot.title = element_text(size = 10)
+  )
+```
+
+explain:
+
+```{r}
+###Make a plot showing the average estimate of β^1 on the y axis
+##and the true value of β1 on the x axis
+sim_results %>% 
+  group_by(beta1) %>% 
+  summarize(
+    mean_beta1 = mean(estimate)
+  ) %>% 
+  ggplot(aes(x = beta1, y = mean_beta1)) +
+  geom_point(size = 3, color = "blue") +
+  labs(
+    title = "Figure 3 the average estimate of β^1 with the value of β1"
+  ) +
+  xlab("β1") +
+  ylab("The average estimate of β^1") 
+  
 
 
 ```
