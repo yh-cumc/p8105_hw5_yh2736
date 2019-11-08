@@ -259,7 +259,7 @@ left_join(propo_dataset, mean_dataset) %>%
     plot.title = element_text(size = 10)
   )
 ```
-
+Given the same sample size, with the increase of effect size, the power of the test increase.
 explain:
 
 ```{r}
