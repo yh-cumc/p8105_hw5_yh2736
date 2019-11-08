@@ -117,7 +117,10 @@ problem2_dataset %>%
     title = "Figure 1, observations value on each ID from week 1 to week 8 in different group"
   ) +
   xlab("Weeks") +
-  ylab("Observations value")
+  ylab("Observations value") +
+  theme(
+    plot.title = element_text(size = 12)
+  )
 
 ###draw a table to statistic the mean value of the arm in weeks
 problem2_dataset %>% 
@@ -227,6 +230,7 @@ left_join(propo_dataset, mean_dataset) %>%
     plot.title = element_text(size = 10)
   )
 ```
+
 Given the same sample size, with the increase of effect size, the power of the test increase.
 explain:
 
