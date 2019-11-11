@@ -8,6 +8,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(ggplot2)
 ```
 
 # Problem 1
@@ -199,69 +200,91 @@ sim_results = bind_rows(output)
 ```{r}
 ###draw a plot showing the proportion of times the null was rejected on the y axis 
 ###and the true value of β1 on the x axis
-propo_dataset <- sim_results %>% 
+propo_dataset <-  sim_results %>% 
   group_by(beta1) %>% 
   summarize(
-    propotion = sum(p_value < 0.05) / n()
-    )
+    propotion = round(sum(p_value < 0.05) / n(), digits = 3)
+    ) 
+  
 
 mean_dataset <- sim_results %>% 
+  filter(p_value < 0.05) %>% 
   group_by(beta1) %>% 
   summarize(
-    propotion = sum(p_value < 0.05) / n(),
     mean = mean(estimate)
-  ) %>% 
-  filter(
-    propotion < 1.0
   ) %>% 
   select(beta1, mean)
 
-left_join(propo_dataset, mean_dataset) %>% 
+propo_dataset %>% 
   ggplot(aes(x = beta1)) +
   geom_col(aes(y = propotion), 
            width = 0.5, fill = "grey") +
-  geom_point(aes(y = mean / 60), 
-             size = 5, color = "blue") +
   scale_y_continuous(
-    name = "Proportion", 
-    sec.axis = sec_axis(~ . *60,
-                        name =  "The mean value of estimate"
-                        ),
-    labels = function(b) {round(b, digits = 2)}
+    name = "Proportion"
   ) +
   labs(
-    title = "Figure 2 the proportion of times the null was rejected and the mean value of estimate with different β1",
+    title = "Figure 2 the proportion of times the null was rejected with different β1",
     fill = "Propotion"
   ) +
   xlab("β1") +
-  ylab("") +
   theme(
-    plot.title = element_text(size = 10),
-    axis.title.y.left = element_text(color = "grey"),
-    axis.title.y.right = element_text(color = "blue")
-  )
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    axis.line.x = element_line(color = "black", size = 0.5),
+    axis.line.y = element_line(color = "black", size = 0.5)
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 6, 1)
+  ) +
+  geom_text(aes(y = propotion, label = propotion), 
+            size = 4, 
+            color = "red",
+            position = "dodge")
+
+
 ```
 
 Given the same sample size, with the increase of effect size, the power of the test increase.
-explain:
+
 
 ```{r}
 ###Make a plot showing the average estimate of β^1 on the y axis
 ##and the true value of β1 on the x axis
-sim_results %>% 
+mean_est_with_all_sample <- sim_results %>% 
   group_by(beta1) %>% 
   summarize(
-    mean_beta1 = mean(estimate)
-  ) %>% 
-  ggplot(aes(x = beta1, y = mean_beta1)) +
-  geom_point(size = 3, color = "blue") +
+    mean_beta1 = round(mean(estimate),digits = 2)
+  ) 
+
+mean_est_only_null <- sim_results %>% 
+  filter(p_value < 0.05) %>% 
+  group_by(beta1) %>% 
+  summarize(
+    mean_beta1_only_null = round(mean(estimate), digits = 2)
+  )
+
+left_join(mean_est_with_all_sample, mean_est_only_null) %>% 
+  ggplot(aes(x = beta1)) +
+  geom_point(aes(y = mean_beta1), color = "grey", size = 2) +
+  geom_line(aes(y = mean_beta1), color = "grey", size = 1) +
+  geom_point(aes(y = mean_beta1_only_null), color = "blue", size = 2) +
+  geom_line(aes(y = mean_beta1_only_null), color = "blue", size = 1) +
   labs(
-    title = "Figure 3 the average estimate of β^1 with the value of β1"
+    title = "Figure 3 the average estimate of β^1 in all samples 
+    and only in sample for which the null was rejected with the value of β1"
   ) +
   xlab("β1") +
-  ylab("The average estimate of β^1") 
-  
+  ylab("The average estimate of β^1") +
+    theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    axis.line.x = element_line(color = "black", size = 0.5),
+    axis.line.y = element_line(color = "black", size = 0.5)
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 6, 1)
+  ) 
+
 
 
 ```
-
