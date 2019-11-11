@@ -144,14 +144,14 @@ The spaghetti plot shows values of observation in control arm does not change ov
 ###set the fix value
 n = 30
 beta0 = 2
-run_times = 1000
+run_times = 10000
 
 ### a funtion to obtain the estimate and p-value
-fun_sim_regression = function(run_times, beta0, beta1 = i){
+fun_sim_regression = function(n, beta0, beta1 = i){
   
   sim_data = tibble(
-    x = rnorm(run_times),
-    y = beta0 + beta1 * x + rnorm(run_times, 0, 50)
+    x = rnorm(n),
+    y = beta0 + beta1 * x + rnorm(n, 0, 50)
     )
   
   ls_fit = lm(y ~ x, data = sim_data)
@@ -168,10 +168,10 @@ fun_sim_regression = function(run_times, beta0, beta1 = i){
 
 ###a funtion to RUN 10000 times to obtain the estimate and p-value
 fun_tidy_est_pvalue = function(i){
-  rerun(n, fun_sim_regression(run_times, beta0, i)) %>% 
+  rerun(run_times, fun_sim_regression(n, beta0, i)) %>% 
     bind_rows() %>% 
     mutate(
-      beta1 = rep(i, n)
+      beta1 = rep(i, run_times)
     )
 }
 
@@ -218,14 +218,16 @@ mean_dataset <- sim_results %>%
 
 left_join(propo_dataset, mean_dataset) %>% 
   ggplot(aes(x = beta1)) +
-  geom_col(aes(y = propotion, fill = beta1), width = 0.5, show.legend = TRUE) +
-  geom_point(aes(y = mean, color = "red"), size = 5, show.legend = FALSE) +
+  geom_col(aes(y = propotion), 
+           width = 0.5, fill = "grey") +
+  geom_point(aes(y = mean / 60), 
+             size = 5, color = "blue") +
   scale_y_continuous(
     name = "Proportion", 
-    sec.axis = sec_axis(~., 
-                        breaks = seq(0, 6, 1),
+    sec.axis = sec_axis(~ . *60,
                         name =  "The mean value of estimate"
-                        )
+                        ),
+    labels = function(b) {round(b, digits = 2)}
   ) +
   labs(
     title = "Figure 2 the proportion of times the null was rejected and the mean value of estimate with different β1",
@@ -234,7 +236,9 @@ left_join(propo_dataset, mean_dataset) %>%
   xlab("β1") +
   ylab("") +
   theme(
-    plot.title = element_text(size = 10)
+    plot.title = element_text(size = 10),
+    axis.title.y.left = element_text(color = "grey"),
+    axis.title.y.right = element_text(color = "blue")
   )
 ```
 
